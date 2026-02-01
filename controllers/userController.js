@@ -183,8 +183,8 @@ const transport = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: "jvphunter001@gmail.com",
-        pass: "nmrtmhgdmjnxnlox"
+        user: "kavindapathum98@gmail.com",
+        pass: process.env.google_app_password
     }
 })
 export async function sendOTP(req,res){
@@ -213,7 +213,7 @@ export async function sendOTP(req,res){
 
     
     const message = {
-        from : "jvphunter001@gmail.com",
+        from : "kavindapathum98@gmail.com",
         to: email,
         subject : "Resetting password.",
         text : "This your password reset OTP : " + randomOTP

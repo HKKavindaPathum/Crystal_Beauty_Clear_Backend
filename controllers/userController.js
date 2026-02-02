@@ -180,8 +180,6 @@ export async function loginWithGoogle(req,res){
 const transport = nodemailer.createTransport({
     service: 'gmail',
     host : 'smtp.gmail.com',
-    port: 465,
-    secure: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.google_app_password

@@ -180,13 +180,14 @@ export async function loginWithGoogle(req,res){
 const transport = nodemailer.createTransport({
     service: 'gmail',
     host : 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.google_app_password
     }
 })
+
 export async function sendOTP(req,res){
     const randomOTP = Math.floor(100000 + Math.random() * 900000);
     const email = req.body.email;
@@ -240,6 +241,7 @@ export async function sendOTP(req,res){
         }
     )
 }
+
 
 export async function resetPassword(req,res){
     const otp  = req.body.otp

@@ -187,6 +187,7 @@ const transport = nodemailer.createTransport({
         pass: process.env.google_app_password
     }
 })
+
 export async function sendOTP(req,res){
     const randomOTP = Math.floor(100000 + Math.random() * 900000);
     const email = req.body.email;
@@ -240,6 +241,7 @@ export async function sendOTP(req,res){
         }
     )
 }
+
 
 export async function resetPassword(req,res){
     const otp  = req.body.otp

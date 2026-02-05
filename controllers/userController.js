@@ -214,7 +214,7 @@ export async function sendOTP(req,res){
 
     
     const message = {
-        from : "kavindapathum98@gmail.com",
+        from : "cbeautyclear@gmail.com",
         to: email,
         subject : "Resetting password.",
         text : "This your password reset OTP : " + randomOTP

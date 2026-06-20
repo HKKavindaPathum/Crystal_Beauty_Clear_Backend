@@ -1,5 +1,6 @@
 import Order from "../models/order.js";
 import Product from "../models/product.js";
+import User from "../models/user.js";
 import { isAdmin } from "./userController.js";
 
 export async function createOrder(req, res) {
@@ -11,6 +12,13 @@ export async function createOrder(req, res) {
     }
 
     const orderInfo = req.body;
+
+    if (!orderInfo.products || !Array.isArray(orderInfo.products) || orderInfo.products.length === 0) {
+        res.status(400).json({
+            message: "Cannot place an order with no products",
+        });
+        return;
+    }
 
     if (orderInfo.name == null) {
         orderInfo.name = req.user.firstName + " " + req.user.lastName;
@@ -153,5 +161,52 @@ export async function updateOrderStatus(req,res){
 			error: e,
 		});
 		return;
+	}
+}
+
+export async function getDashboardStats(req, res) {
+	if (!isAdmin(req)) {
+		res.status(403).json({
+			message: "You are not authorized to view dashboard stats",
+		});
+		return;
+	}
+	try {
+		const totalOrders = await Order.countDocuments();
+		const totalUsers = await User.countDocuments();
+		const totalProducts = await Product.countDocuments();
+
+		const salesAggregate = await Order.aggregate([
+			{
+				$match: {
+					status: { $in: ["completed", "delivered"] }
+				}
+			},
+			{
+				$group: {
+					_id: null,
+					totalSales: { $sum: "$total" }
+				}
+			}
+		]);
+
+		const totalSales = salesAggregate.length > 0 ? salesAggregate[0].totalSales : 0;
+		const lowStockCount = await Product.countDocuments({ stock: { $lt: 5 } });
+		const lowStockProducts = await Product.find({ stock: { $lt: 5 } }).limit(20);
+
+		res.json({
+			totalSales,
+			totalOrders,
+			totalUsers,
+			totalProducts,
+			lowStockCount,
+			lowStockProducts
+		});
+	} catch (err) {
+		console.error("Dashboard stats error:", err);
+		res.status(500).json({
+			message: "Failed to fetch dashboard statistics",
+			error: err.message
+		});
 	}
 }

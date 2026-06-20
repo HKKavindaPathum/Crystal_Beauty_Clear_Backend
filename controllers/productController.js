@@ -40,9 +40,10 @@ export function saveProduct(req, res){
             })
         }
     ).catch( 
-        ()=>{
-            res.json({
-                message : "Fail to add product"
+        (err)=>{
+            res.status(500).json({
+                message : "Fail to add product",
+                error: err.message
             })
         }
     )

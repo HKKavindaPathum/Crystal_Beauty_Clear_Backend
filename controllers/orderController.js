@@ -194,13 +194,58 @@ export async function getDashboardStats(req, res) {
 		const lowStockCount = await Product.countDocuments({ stock: { $lt: 5 } });
 		const lowStockProducts = await Product.find({ stock: { $lt: 5 } }).limit(20);
 
+		// Sales trend over time (last 10 days of orders)
+		const salesOverTime = await Order.aggregate([
+			{
+				$group: {
+					_id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+					sales: { $sum: "$total" },
+					orders: { $sum: 1 }
+				}
+			},
+			{ $sort: { _id: 1 } },
+			{ $limit: 10 }
+		]);
+
+		// Category distribution of products in store
+		const categoryDistribution = await Product.aggregate([
+			{
+				$group: {
+					_id: "$category",
+					count: { $sum: 1 }
+				}
+			}
+		]);
+
+		// Top selling products by order quantity
+		const topProducts = await Order.aggregate([
+			{ $unwind: "$products" },
+			{
+				$group: {
+					_id: "$products.productInfo.productId",
+					name: { $first: "$products.productInfo.name" },
+					image: { $first: { $arrayElemAt: ["$products.productInfo.images", 0] } },
+					salesCount: { $sum: "$products.quantity" }
+				}
+			},
+			{ $sort: { salesCount: -1 } },
+			{ $limit: 5 }
+		]);
+
+		// Recent orders activity feed
+		const recentOrders = await Order.find().sort({ date: -1 }).limit(5);
+
 		res.json({
 			totalSales,
 			totalOrders,
 			totalUsers,
 			totalProducts,
 			lowStockCount,
-			lowStockProducts
+			lowStockProducts,
+			salesOverTime,
+			categoryDistribution,
+			topProducts,
+			recentOrders
 		});
 	} catch (err) {
 		console.error("Dashboard stats error:", err);

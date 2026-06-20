@@ -12,6 +12,13 @@ export async function createOrder(req, res) {
 
     const orderInfo = req.body;
 
+    if (!orderInfo.products || !Array.isArray(orderInfo.products) || orderInfo.products.length === 0) {
+        res.status(400).json({
+            message: "Cannot place an order with no products",
+        });
+        return;
+    }
+
     if (orderInfo.name == null) {
         orderInfo.name = req.user.firstName + " " + req.user.lastName;
     }

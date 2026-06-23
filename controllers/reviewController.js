@@ -102,39 +102,41 @@ export async function getProductReviews(req, res) {
 }
 
 export async function getAllReviews(req, res) {
+  if (!isAdmin(req)) {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
 
-  if(isAdmin(req)){
-    try {
-      const reviews = await Review.find().sort({ date: -1 });
-      res.status(200).json(reviews);
-    } catch (err) {
-      console.error("Failed to fetch reviews:", err);
-      res.status(500).json({
-        message: "Failed to fetch reviews",
-        error: err.message,
-      });
-    }
+  try {
+    const reviews = await Review.find().sort({ date: -1 });
+    res.status(200).json(reviews);
+  } catch (err) {
+    console.error("Failed to fetch reviews:", err);
+    res.status(500).json({
+      message: "Failed to fetch reviews",
+      error: err.message,
+    });
   }
 }
 
 export async function deleteReview(req, res) {
-
   const { reviewId } = req.params;
-  if(isAdmin(req)){
-    try {
-      const deleted = await Review.findOneAndDelete({ reviewId });
-      if (!deleted) {
-        return res.status(404).json({ message: "Review not found" });
-      }
+  if (!isAdmin(req)) {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
 
-      res.status(200).json({ message: "Review deleted successfully" });
-    } catch (err) {
-      console.error("Failed to delete review:", err);
-      res.status(500).json({
-        message: "Failed to delete review",
-        error: err.message,
-      });
+  try {
+    const deleted = await Review.findOneAndDelete({ reviewId });
+    if (!deleted) {
+      return res.status(404).json({ message: "Review not found" });
     }
+
+    res.status(200).json({ message: "Review deleted successfully" });
+  } catch (err) {
+    console.error("Failed to delete review:", err);
+    res.status(500).json({
+      message: "Failed to delete review",
+      error: err.message,
+    });
   }
 }
 
